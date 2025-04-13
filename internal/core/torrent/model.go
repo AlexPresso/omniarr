@@ -1,6 +1,6 @@
 package torrent
 
-type Result struct {
+type Torrent struct {
 	Guid        string `json:"guid"`
 	Title       string `json:"title"`
 	Size        uint   `json:"size"`

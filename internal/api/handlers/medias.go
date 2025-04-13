@@ -6,9 +6,10 @@ import (
 	"log"
 	"omniarr/internal/api/response"
 	"omniarr/internal/core/media"
+	"strconv"
 )
 
-func SearchHandler(c *fiber.Ctx) error {
+func MediaSearchHandler(c *fiber.Ctx) error {
 	ctx := context.Background()
 
 	query := c.Query("q")
@@ -23,4 +24,18 @@ func SearchHandler(c *fiber.Ctx) error {
 	}
 
 	return response.OK(c, results)
+}
+
+func MediaDetailsHandler(c *fiber.Ctx) error {
+	ctx := context.Background()
+	idString := c.Params("id")
+
+	id, err := strconv.Atoi(idString) //This will change when Omniarr supports different providers
+	details, err := media.GetDetails(ctx, id)
+	if err != nil {
+		log.Printf("Error getting media details: %v", err)
+		return response.Fail(c, "")
+	}
+
+	return response.OK(c, details)
 }

@@ -11,6 +11,7 @@ type Config struct {
 	JackettURL    string
 	JackettApiKey string
 	TMDBAPIKey    string
+	Language      string
 }
 
 var AppConfig Config
@@ -25,6 +26,7 @@ func init() {
 		JackettURL:    getEnv("JACKETT_URL", "http://localhost:9117"),
 		JackettApiKey: getEnv("JACKETT_API_KEY", ""),
 		TMDBAPIKey:    getEnv("TMDB_API_KEY", ""),
+		Language:      getEnv("LANGUAGE", "en-US"),
 	}
 }
 

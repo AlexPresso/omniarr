@@ -1,5 +1,15 @@
+import {Download} from "./Download.ts";
+
 export type Media = {
-  title: string;
-  cover: string;
-  type: string;
+    id: string;
+    title: string;
+    description: string;
+    popularity: number;
+    releaseDate: string;
+    cover: string;
+    type: string;
 };
+
+export type MediaDetails = Media & {
+    torrents: Download[];
+}
