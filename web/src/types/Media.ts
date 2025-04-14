@@ -11,5 +11,5 @@ export type Media = {
 };
 
 export type MediaDetails = Media & {
-    torrents: Download[];
+    downloads: Download[];
 }

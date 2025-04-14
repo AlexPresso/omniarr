@@ -7,9 +7,23 @@ import {useState} from "react";
 export default function Home() {
     const { results, setResults } = useSearchContext()
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState<Error | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
     const renderResults = () => {
+        if(loading)
+            return (
+                <div className="flex justify-center my-24">
+                    <span className="loading loading-ring loading-lg"></span>
+                </div>
+            )
+
+        if(error)
+            return (
+                <div className="card bg-base-200 shadow-xl max-w-md mx-auto mt-24 p-8 text-center">
+                    <p className="text-error">{error}</p>
+                </div>
+            );
+
         if(!results)
             return <></>
 

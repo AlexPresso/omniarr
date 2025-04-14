@@ -9,7 +9,7 @@ const baseUrls: Record<string, string> = {
 export default function MediaCard(props: { media: Media }) {
     const navigate = useNavigate();
     const navigateToDetails = () => {
-        navigate(`/media/${props.media.id}`)
+        navigate(`/media/${props.media.type}:${props.media.id}`)
     }
 
     return (

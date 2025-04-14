@@ -7,11 +7,15 @@ import (
 )
 
 type Config struct {
-	Port          string
-	JackettURL    string
-	JackettApiKey string
-	TMDBAPIKey    string
-	Language      string
+	Port             string
+	JackettURL       string
+	JackettApiKey    string
+	TMDBAPIKey       string
+	Language         string
+	TransmissionUser string
+	TransmissionPass string
+	TransmissionHost string
+	TransmissionPort string
 }
 
 var AppConfig Config
@@ -22,11 +26,15 @@ func init() {
 	}
 
 	AppConfig = Config{
-		Port:          getEnv("PORT", "8080"),
-		JackettURL:    getEnv("JACKETT_URL", "http://localhost:9117"),
-		JackettApiKey: getEnv("JACKETT_API_KEY", ""),
-		TMDBAPIKey:    getEnv("TMDB_API_KEY", ""),
-		Language:      getEnv("LANGUAGE", "en-US"),
+		Port:             getEnv("PORT", "8080"),
+		JackettURL:       getEnv("JACKETT_URL", "http://localhost:9117"),
+		JackettApiKey:    getEnv("JACKETT_API_KEY", ""),
+		TMDBAPIKey:       getEnv("TMDB_API_KEY", ""),
+		Language:         getEnv("LANGUAGE", "en-US"),
+		TransmissionUser: getEnv("TRANSMISSION_USER", ""),
+		TransmissionPass: getEnv("TRANSMISSION_PASSWORD", ""),
+		TransmissionHost: getEnv("TRANSMISSION_HOST", "localhost"),
+		TransmissionPort: getEnv("TRANSMISSION_PORT", "9091"),
 	}
 }
 

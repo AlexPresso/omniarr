@@ -13,8 +13,9 @@ func SetupRoutes(app *fiber.App) {
 
 	medias := api.Group("/medias")
 	medias.Get("/search", handlers.MediaSearchHandler)
-	medias.Get("/:id", handlers.MediaDetailsHandler)
+	medias.Get("/:media", handlers.MediaDetailsHandler)
 
 	downloads := api.Group("/downloads")
 	downloads.Get("/search", handlers.DownloadsSearchHandler)
+	downloads.Post("/queue", handlers.QueueDownloadHandler)
 }

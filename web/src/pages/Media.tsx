@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router';
 import {MediaDetails} from "../types/Media.ts";
 import DownloadList from "../components/DownloadList.tsx";
-import apiRequest from "../utils/Requester.tsx";
+import {getRequest} from "../utils/Requester.tsx";
 
 export default function Media() {
     const { id } = useParams<{ id: string }>();
@@ -11,7 +11,7 @@ export default function Media() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => apiRequest(`/medias/${id}`, setMedia, setLoading, setError), [id]);
+    useEffect(() => getRequest(`/medias/${id}`, setMedia, setLoading, setError), [id]);
 
     if (loading) {
         return (

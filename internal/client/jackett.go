@@ -6,10 +6,10 @@ import (
 	"omniarr/internal/config"
 )
 
-var JackettClient *jackett.Jackett
+var Jackett *jackett.Jackett
 
 func init() {
-	JackettClient = jackett.NewJackett(&jackett.Settings{
+	Jackett = jackett.NewJackett(&jackett.Settings{
 		ApiURL: config.AppConfig.JackettURL,
 		ApiKey: config.AppConfig.JackettApiKey,
 	})

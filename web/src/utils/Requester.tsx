@@ -1,10 +1,10 @@
 import {ApiResponse} from "../types/ApiResponse.ts";
 
-export default function apiRequest(endpoint: string, setData: Function, setLoading: Function, setError: Function) {
+export function getRequest(url: string, setData: Function, setLoading: Function, setError: Function) {
     (async () => {
         try {
             setLoading(true);
-            const response = await fetch(`/api${endpoint}`);
+            const response = await fetch(`/api${url}`);
             if(!response.ok) {
                 throw new Error(`(${response.status}) An error occurred.`);
             }
@@ -23,3 +23,29 @@ export default function apiRequest(endpoint: string, setData: Function, setLoadi
         }
     })()
 }
+
+export async function postRequest(url: string, data: any) {
+    try {
+        const response = await fetch(`/api${url}`, {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data),
+        });
+
+        if(!response.ok) {
+            throw new Error(`(${response.status}) An error occurred.`);
+        }
+
+        const json = await response.json();
+        if (json.error) {
+            throw new Error(`Error: ${json.error}`);
+        }
+
+        return json.data;
+    } catch (err) {
+        console.error(err);
+    }
+}
+

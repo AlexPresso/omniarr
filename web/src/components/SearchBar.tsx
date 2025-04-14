@@ -1,7 +1,7 @@
 import {useEffect} from "react";
 import * as React from "react";
 import {useSearchContext} from "../contexts/SearchContext.tsx";
-import apiRequest from "../utils/Requester.tsx";
+import { getRequest } from "../utils/Requester.tsx";
 
 export default function SearchBar(props: { setResults: Function, setLoading: Function, setError: Function }) {
     const { searchQuery, setSearchQuery } = useSearchContext();
@@ -12,7 +12,7 @@ export default function SearchBar(props: { setResults: Function, setLoading: Fun
             return;
         }
 
-        apiRequest(`/medias/search?q=${searchQuery}`, props.setResults, props.setLoading, props.setError);
+        getRequest(`/medias/search?q=${searchQuery}`, props.setResults, props.setLoading, props.setError);
     };
 
     useEffect(() => {

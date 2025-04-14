@@ -1,14 +1,32 @@
 import {Download} from "../types/Download.ts";
 import {MediaDetails} from "../types/Media.ts";
 import {useEffect, useState} from "react";
-import apiRequest from "../utils/Requester.tsx";
+import { getRequest, postRequest } from "../utils/Requester.tsx";
 
 export default function DownloadList(props: {media: MediaDetails}) {
     const [downloads, setDownloads] = useState<Download[] | null>([]);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
 
-    useEffect(() => apiRequest(`/downloads/search?q=${props.media.title}`, setDownloads, setLoading, setError), [])
+    useEffect(() => getRequest(`/downloads/search?q=${props.media.title}&type=${props.media.type}`, setDownloads, setLoading, setError), [])
+
+    const queueDownload = async (url: string) => {
+        await postRequest(`/downloads/queue`, {url: url});
+    }
+
+    if(loading)
+        return (
+            <div className="flex justify-center my-24">
+                <span className="loading loading-ring loading-lg"></span>
+            </div>
+        )
+
+    if(error)
+        return (
+            <div className="card bg-base-200 shadow-xl max-w-md mx-auto mt-24 p-8 text-center">
+                <p className="text-error">{error}</p>
+            </div>
+        );
 
     if(!downloads)
         return <div className="alert alert-error shadow-lg">An error occurred while fetching downloads</div>
@@ -26,6 +44,7 @@ export default function DownloadList(props: {media: MediaDetails}) {
                 <thead>
                 <tr>
                     <th>Title</th>
+                    <th>Tracker</th>
                     <th>Size</th>
                     <th>Seeds</th>
                     <th>Peers</th>
@@ -36,13 +55,17 @@ export default function DownloadList(props: {media: MediaDetails}) {
                     {downloads.map((download: Download, idx) => (
                         <tr key={idx}>
                             <td>{download.title}</td>
+                            <td>{download.indexer}</td>
                             <td>{download.size}</td>
                             <td>{download.seeders}</td>
                             <td>{download.leechers}</td>
                             <td>
-                                <a className="btn btn-primary btn-sm" href={download.downloadUrl} target="_blank" rel="noopener noreferrer">
-                                    Download
-                                </a>
+                                <button
+                                    className="btn btn-primary btn-sm"
+                                    onClick={() => queueDownload(download.magnetUri || download.link)}
+                                >
+                                  Download
+                                </button>
                             </td>
                         </tr>
                     ))}

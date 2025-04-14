@@ -6,7 +6,7 @@ import (
 	"omniarr/internal/config"
 )
 
-var TMDBClient *tmdb.Client
+var TMDB *tmdb.Client
 var TMDBDefaultOptions map[string]string
 
 func init() {
@@ -20,7 +20,7 @@ func init() {
 		"language":           config.AppConfig.Language,
 		"append_to_response": "alternative_titles",
 	}
-	TMDBClient = client
+	TMDB = client
 
 	log.Println("🔌 TMDB client initialized")
 }

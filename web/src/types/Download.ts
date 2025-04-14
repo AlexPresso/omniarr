@@ -3,5 +3,8 @@ export type Download = {
     size: string;
     seeders: number;
     leechers: number;
-    downloadUrl: string;
+    publishDate: string;
+    indexer: string;
+    link: string;
+    magnetUri: string;
 };
