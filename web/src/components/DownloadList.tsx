@@ -20,7 +20,7 @@ export default function DownloadList(props: {media: MediaDetails}) {
         }, setLoading, setError)
     }
 
-    const queueDownload = async (url: string) => {}
+    const queueDownload = async (_: string) => {}
 
     if(loading)
         return (

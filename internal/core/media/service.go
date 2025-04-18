@@ -3,6 +3,7 @@ package media
 import (
 	"context"
 	"fmt"
+	"github.com/gofiber/fiber/v2/log"
 )
 
 var mediaFetchers = map[Type]Fetcher{
@@ -22,7 +23,8 @@ func Search(ctx context.Context, query string, mediaTypes []Type) ([]*Media, err
 
 		media, err := fetcher.Search(ctx, query)
 		if err != nil {
-			return nil, err
+			log.Error(err)
+			continue
 		}
 
 		medias = append(medias, media...)
