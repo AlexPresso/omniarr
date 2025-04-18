@@ -6,7 +6,7 @@ import (
 )
 
 func SetupRoutes(app *fiber.App) {
-	app.Static("/", "./web/build")
+	app.Static("/", "./web/dist")
 
 	api := app.Group("/api")
 	api.Get("/health", handlers.HealthHandler)
@@ -16,6 +16,6 @@ func SetupRoutes(app *fiber.App) {
 	medias.Get("/:media", handlers.MediaDetailsHandler)
 
 	downloads := api.Group("/downloads")
-	downloads.Get("/search", handlers.DownloadsSearchHandler)
+	downloads.Post("/query", handlers.DownloadsSearchHandler)
 	downloads.Post("/queue", handlers.QueueDownloadHandler)
 }

@@ -1,8 +1,10 @@
 package media
 
 import (
+	"github.com/Open-pi/gol"
 	tmdb "github.com/cyruzin/golang-tmdb"
 	"strconv"
+	"strings"
 )
 
 type TMDBMediaLight struct {
@@ -17,6 +19,12 @@ type TMDBMediaLight struct {
 	FirstAirDate  string
 	PosterPath    string
 	Type          string
+}
+
+type OpenLibraryMediaLight struct {
+	Key   string
+	Title string
+	Cover string `mapstructure:"cover_i"`
 }
 
 func (m *TMDBMediaLight) GetID() string { return strconv.FormatInt(m.ID, 10) }
@@ -68,3 +76,40 @@ func (t *TVWrapper) GetPopularity() float32   { return t.Popularity }
 func (t *TVWrapper) GetReleaseDate() string   { return t.FirstAirDate }
 func (t *TVWrapper) GetCover() string         { return t.PosterPath }
 func (t *TVWrapper) GetType() Type            { return "tv" }
+
+type BookWrapper struct {
+	*gol.Work
+}
+
+func (b *OpenLibraryMediaLight) GetID() string            { return strings.ReplaceAll(b.Key, "/works/", "") }
+func (b *OpenLibraryMediaLight) GetTitle() string         { return b.Title }
+func (b *OpenLibraryMediaLight) GetOriginalTitle() string { return "" }
+func (b *OpenLibraryMediaLight) GetOverview() string      { return "" }
+func (b *OpenLibraryMediaLight) GetPopularity() float32   { return 0 }
+func (b *OpenLibraryMediaLight) GetReleaseDate() string   { return "" }
+func (b *OpenLibraryMediaLight) GetCover() string         { return b.Cover }
+func (b *OpenLibraryMediaLight) GetType() Type            { return "book" }
+
+func (b *BookWrapper) GetID() string {
+	if key, err := b.Key(); err == nil {
+		return key
+	}
+	return ""
+}
+func (b *BookWrapper) GetTitle() string {
+	if title, err := b.Title(); err == nil {
+		return title
+	}
+	return ""
+}
+func (b *BookWrapper) GetOriginalTitle() string { return "" }
+func (b *BookWrapper) GetOverview() string {
+	if desc, err := b.Desc(); err == nil {
+		return desc
+	}
+	return ""
+}
+func (b *BookWrapper) GetPopularity() float32 { return 0 }
+func (b *BookWrapper) GetReleaseDate() string { return "" }
+func (b *BookWrapper) GetCover() string       { return b.FirstCoverKey() }
+func (b *BookWrapper) GetType() Type          { return "book" }

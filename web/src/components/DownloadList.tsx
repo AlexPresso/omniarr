@@ -1,18 +1,26 @@
 import {Download} from "../types/Download.ts";
 import {MediaDetails} from "../types/Media.ts";
 import {useEffect, useState} from "react";
-import { getRequest, postRequest } from "../utils/Requester.tsx";
+import {postRequest} from "../utils/Requester.tsx";
 
 export default function DownloadList(props: {media: MediaDetails}) {
     const [downloads, setDownloads] = useState<Download[] | null>([]);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
 
-    useEffect(() => getRequest(`/downloads/search?q=${props.media.title}&type=${props.media.type}`, setDownloads, setLoading, setError), [])
+    useEffect(() => {fetchDownloads(setLoading, setError).then(setDownloads)}, []);
 
-    const queueDownload = async (url: string) => {
-        await postRequest(`/downloads/queue`, {url: url});
+    const fetchDownloads = async (setError: Function, setLoading: Function) => {
+        return await postRequest("/downloads/query", {
+            externalId: props.media.id,
+            title: props.media.title,
+            originalTitle: props.media.originalTitle,
+            type: props.media.type,
+            year: props.media.releaseDate?.split("-")[0] || ""
+        }, setLoading, setError)
     }
+
+    const queueDownload = async (url: string) => {}
 
     if(loading)
         return (

@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router';
 import {MediaDetails} from "../types/Media.ts";
 import DownloadList from "../components/DownloadList.tsx";
 import {getRequest} from "../utils/Requester.tsx";
+import {getCoverURL} from "../types/Media.ts";
 
 export default function Media() {
     const { id } = useParams<{ id: string }>();
@@ -11,7 +12,7 @@ export default function Media() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => getRequest(`/medias/${id}`, setMedia, setLoading, setError), [id]);
+    useEffect(() => {getRequest(`/medias/${id}`, setLoading, setError).then(setMedia)}, [id]);
 
     if (loading) {
         return (
@@ -35,7 +36,7 @@ export default function Media() {
             <div className="card lg:card-side shadow-xl bg-base-200 overflow-hidden">
                 <figure className="lg:w-1/3 bg-neutral">
                     <img
-                        src={media.cover ? `https://image.tmdb.org/t/p/original/${media.cover}` : '/placeholder.png'}
+                        src={media.cover ? getCoverURL(media.type, media.cover) : '/placeholder.png'}
                         alt={media.title}
                         className="object-cover h-full w-full"
                     />

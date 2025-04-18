@@ -2,6 +2,7 @@ package download
 
 import (
 	"context"
+	"github.com/gofiber/fiber/v2/log"
 	"github.com/hekmon/transmissionrpc"
 	"github.com/webtor-io/go-jackett"
 	"omniarr/internal/client"
@@ -38,18 +39,13 @@ var categories = map[media.Type][]uint{
 	},
 }
 
-func Search(ctx context.Context, query string, mediaType media.Type) ([]Download, error) {
-	req := &jackett.FetchRequest{
-		Query:      query,
-		Categories: append(categories[mediaType], 8000),
-	}
-
-	resp, err := client.Jackett.Fetch(ctx, req)
+func Search(ctx context.Context, query SearchQuery) ([]Download, error) {
+	results, err := generateQueriesAndFetch(ctx, query)
 	if err != nil {
 		return nil, err
 	}
 
-	return filterAndMapToSearchResults(query, resp.Results), nil
+	return filterAndMapToSearchResults(query, results), nil
 }
 
 func QueueDownload(ctx context.Context, url string) error {
@@ -64,13 +60,35 @@ func QueueDownload(ctx context.Context, url string) error {
 	return nil
 }
 
-func filterAndMapToSearchResults(query string, results []jackett.Result) []Download {
+func generateQueriesAndFetch(ctx context.Context, query SearchQuery) ([]jackett.Result, error) {
+	queries := media.MakeAlternateTitles(query.Title)
+	queries = append(queries, media.MakeAlternateTitles(query.OriginalTitle)...)
+
+	var results []jackett.Result
+	queryCategories := append(categories[media.Type(query.Type)], 8000)
+
+	for _, q := range queries {
+		log.Info("Searching for %s", q)
+		req := &jackett.FetchRequest{
+			Query:      q,
+			Categories: queryCategories,
+		}
+
+		resp, err := client.Jackett.Fetch(ctx, req)
+		if err != nil {
+			log.Error("Error fetching results from Jackett: %v", err)
+			continue
+		}
+
+		results = append(results, resp.Results...)
+	}
+
+	return results, nil
+}
+
+func filterAndMapToSearchResults(query SearchQuery, results []jackett.Result) []Download {
 	torrentsMap := make(map[string]Download)
 	for _, r := range results {
-		//if !strings.Contains(strings.ToLower(r.Title), strings.ToLower(query)) {
-		//	continue
-		//}
-
 		link := strings.ReplaceAll(r.Link, config.AppConfig.JackettApiKey, "<jackettApiKey>")
 		magnetUri := strings.ReplaceAll(r.MagnetUri, config.AppConfig.JackettApiKey, "<jackettApiKey>")
 

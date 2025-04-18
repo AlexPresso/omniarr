@@ -6,23 +6,24 @@ import (
 	"github.com/gofiber/fiber/v2/log"
 	"omniarr/internal/api/response"
 	"omniarr/internal/core/download"
-	"omniarr/internal/core/media"
 )
 
 func DownloadsSearchHandler(c *fiber.Ctx) error {
 	ctx := context.Background()
+	var search download.SearchQuery
 
-	query := c.Query("q")
-	if query == "" {
-		return response.Fail(c, "Missing ?q= param", fiber.StatusBadRequest)
+	if err := c.BodyParser(&search); err != nil {
+		return response.Fail(c, "Failed to parse request", fiber.StatusBadRequest)
 	}
 
-	mediaType := c.Query("type")
-	if mediaType == "" {
+	if search.Type == "" {
 		return response.Fail(c, "Missing ?type= param", fiber.StatusBadRequest)
 	}
+	if search.Title == "" {
+		return response.Fail(c, "Missing ?title= param", fiber.StatusBadRequest)
+	}
 
-	results, err := download.Search(ctx, query, media.Type(mediaType))
+	results, err := download.Search(ctx, search)
 	if err != nil {
 		return response.Fail(c, "")
 	}

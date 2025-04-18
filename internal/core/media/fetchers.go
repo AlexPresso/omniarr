@@ -2,12 +2,15 @@ package media
 
 import (
 	"context"
+	"github.com/Open-pi/gol"
 	"github.com/jinzhu/copier"
+	"github.com/mitchellh/mapstructure"
 	"omniarr/internal/client"
+	"strconv"
 )
 
 type Fetcher interface {
-	Fetch(ctx context.Context, id int) (*Media, error)
+	Fetch(ctx context.Context, id string) (*Media, error)
 	Search(ctx context.Context, query string) ([]*Media, error)
 }
 
@@ -16,8 +19,13 @@ type TVFetcher struct{}
 type MusicFetcher struct{}
 type BookFetcher struct{}
 
-func (MovieFetcher) Fetch(ctx context.Context, id int) (*Media, error) {
-	movie, err := client.TMDB.GetMovieDetails(id, client.TMDBDefaultOptions)
+func (MovieFetcher) Fetch(ctx context.Context, id string) (*Media, error) {
+	intId, err := strconv.Atoi(id)
+	if err != nil {
+		return nil, err
+	}
+
+	movie, err := client.TMDB.GetMovieDetails(intId, client.TMDBDefaultOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -46,8 +54,13 @@ func (MovieFetcher) Search(ctx context.Context, query string) ([]*Media, error) 
 	return medias, nil
 }
 
-func (TVFetcher) Fetch(ctx context.Context, id int) (*Media, error) {
-	tvShow, err := client.TMDB.GetTVDetails(id, client.TMDBDefaultOptions)
+func (TVFetcher) Fetch(ctx context.Context, id string) (*Media, error) {
+	intId, err := strconv.Atoi(id)
+	if err != nil {
+		return nil, err
+	}
+
+	tvShow, err := client.TMDB.GetTVDetails(intId, client.TMDBDefaultOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -70,6 +83,34 @@ func (TVFetcher) Search(ctx context.Context, query string) ([]*Media, error) {
 		}
 
 		media.Type = "tv"
+		medias = append(medias, ToMedia(&media))
+	}
+
+	return medias, nil
+}
+
+func (BookFetcher) Fetch(ctx context.Context, id string) (*Media, error) {
+	book, err := gol.GetWork(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return ToMedia(&BookWrapper{&book}), nil
+}
+
+func (BookFetcher) Search(ctx context.Context, query string) ([]*Media, error) {
+	books, err := gol.Search(gol.SearchUrl().All(query).Construct())
+	if err != nil {
+		return nil, err
+	}
+
+	var medias []*Media
+	for _, book := range books.Path("docs").Data().([]interface{}) {
+		var media OpenLibraryMediaLight
+		if err := mapstructure.Decode(book, &media); err != nil {
+			return nil, err
+		}
+
 		medias = append(medias, ToMedia(&media))
 	}
 

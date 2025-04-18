@@ -2,6 +2,14 @@ package download
 
 import "omniarr/internal/core/media"
 
+type SearchQuery struct {
+	ExternalId    string `json:"externalId"`
+	Title         string `json:"title"`
+	OriginalTitle string `json:"originalTitle"`
+	Year          string `json:"year"`
+	Type          string `json:"type"`
+}
+
 type Download struct {
 	Title       string `json:"title"`
 	Size        uint   `json:"size"`

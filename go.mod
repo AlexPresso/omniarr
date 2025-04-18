@@ -3,15 +3,18 @@ module omniarr
 go 1.24.2
 
 require (
+	github.com/Open-pi/gol v0.1.1
 	github.com/cyruzin/golang-tmdb v1.6.9
 	github.com/gofiber/fiber/v2 v2.52.6
 	github.com/hekmon/transmissionrpc v1.1.0
 	github.com/jinzhu/copier v0.4.0
 	github.com/joho/godotenv v1.5.1
+	github.com/mitchellh/mapstructure v1.5.0
 	github.com/webtor-io/go-jackett v0.0.0-20201110160721-0d56a2f41070
 )
 
 require (
+	github.com/Jeffail/gabs/v2 v2.6.1 // indirect
 	github.com/andybalholm/brotli v1.1.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.1 // indirect

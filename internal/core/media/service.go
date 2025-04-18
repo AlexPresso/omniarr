@@ -8,6 +8,7 @@ import (
 var mediaFetchers = map[Type]Fetcher{
 	"movie": MovieFetcher{},
 	"tv":    TVFetcher{},
+	"book":  BookFetcher{},
 }
 
 func Search(ctx context.Context, query string, mediaTypes []Type) ([]*Media, error) {
@@ -30,7 +31,7 @@ func Search(ctx context.Context, query string, mediaTypes []Type) ([]*Media, err
 	return medias, nil
 }
 
-func GetDetails(ctx context.Context, id int, mediaType Type) (*Media, error) {
+func GetDetails(ctx context.Context, id string, mediaType Type) (*Media, error) {
 	fetcher, ok := mediaFetchers[mediaType]
 	if !ok {
 		return nil, fmt.Errorf("unsupported media type: %s", mediaType)

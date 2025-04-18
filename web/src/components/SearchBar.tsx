@@ -12,7 +12,7 @@ export default function SearchBar(props: { setResults: Function, setLoading: Fun
             return;
         }
 
-        getRequest(`/medias/search?q=${searchQuery}`, props.setResults, props.setLoading, props.setError);
+        props.setResults(await getRequest(`/medias/search?q=${searchQuery}`, props.setLoading, props.setError));
     };
 
     useEffect(() => {

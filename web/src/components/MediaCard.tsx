@@ -1,10 +1,5 @@
-import {Media} from "../types/Media.ts";
+import {getCoverURL, Media} from "../types/Media.ts";
 import {useNavigate} from "react-router";
-
-const baseUrls: Record<string, string> = {
-    "movie": "https://image.tmdb.org/t/p/w500",
-    "tv": "https://image.tmdb.org/t/p/w500",
-}
 
 export default function MediaCard(props: { media: Media }) {
     const navigate = useNavigate();
@@ -16,7 +11,7 @@ export default function MediaCard(props: { media: Media }) {
         <div onClick={navigateToDetails} className="card shadow-xl cursor-pointer group relative overflow-hidden">
             <figure className="w-full h-full">
                 <img
-                    src={`${baseUrls[props.media.type]}${props.media.cover}`}
+                    src={getCoverURL(props.media.type, props.media.cover)}
                     alt={props.media.title}
                     className="object-cover w-full h-full"
                 />

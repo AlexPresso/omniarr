@@ -6,17 +6,16 @@ import (
 	"github.com/gofiber/fiber/v2/log"
 	"omniarr/internal/api/response"
 	"omniarr/internal/core/media"
-	"strconv"
 	"strings"
 )
 
 func MediaSearchHandler(c *fiber.Ctx) error {
 	ctx := context.Background()
 
-	mediaTypes := []media.Type{"movie", "tv"}
+	mediaTypes := []media.Type{"movie", "tv", "book"}
 	mediaType := c.Query("type")
 	if mediaType != "" {
-		mediaTypes = []media.Type{"movie"}
+		mediaTypes = []media.Type{media.Type(mediaType)}
 	}
 
 	query := c.Query("q")
@@ -43,8 +42,7 @@ func MediaDetailsHandler(c *fiber.Ctx) error {
 	mediaType := media.Type(mediaSplit[0])
 	idString := mediaSplit[1]
 
-	id, err := strconv.Atoi(idString)
-	details, err := media.GetDetails(ctx, id, mediaType)
+	details, err := media.GetDetails(ctx, idString, mediaType)
 	if err != nil {
 		log.Error("Error getting media details: %v", err)
 		return response.Fail(c, "")
