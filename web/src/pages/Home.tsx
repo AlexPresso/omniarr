@@ -9,6 +9,13 @@ export default function Home() {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null);
 
+    const onData = (data: any) => {
+        setResults(prevResults => [
+            ...prevResults || [],
+            data
+        ])
+    }
+
     const renderResults = () => {
         if(loading)
             return (
@@ -36,7 +43,7 @@ export default function Home() {
     return (
         <div className="p-4 flex flex-col items-center min-h-[80vh]">
             <div className="w-full max-w-xl mt-8">
-                <SearchBar setResults={setResults} setLoading={setLoading} setError={setError} />
+                <SearchBar setResults={setResults} onData={onData} setLoading={setLoading} setError={setError} />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mt-10 w-full max-w-5xl">
                 {renderResults()}

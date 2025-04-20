@@ -1,12 +1,12 @@
 package handlers
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"github.com/gin-gonic/gin"
 	"omniarr/internal/api/response"
 )
 
-func HealthHandler(c *fiber.Ctx) error {
-	return response.OK(c, fiber.Map{
+func HealthHandler(c *gin.Context) {
+	response.OK(c, map[string]interface{}{
 		"status":  "ok",
 		"version": "1.0.0",
 	})

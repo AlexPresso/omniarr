@@ -8,16 +8,16 @@ import Media from "./pages/Media.tsx";
 export default function App() {
     return (
         <div className="min-h-screen bg-base-100 text-base-content">
-            <BrowserRouter>
-                <Header />
-                <SearchProvider>
+            <SearchProvider>
+                <BrowserRouter>
+                    <Header />
                     <Routes>
                         <Route path="/" element={<Home />} />
                         <Route path="/media/:id" element={<Media />} />
                         <Route path="/settings" element={<Settings />} />
                     </Routes>
-                </SearchProvider>
-            </BrowserRouter>
+                </BrowserRouter>
+            </SearchProvider>
         </div>
     )
 }

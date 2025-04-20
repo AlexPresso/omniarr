@@ -2,21 +2,21 @@ package main
 
 import (
 	"fmt"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gin-gonic/gin"
 	"log"
 	"omniarr/internal/api"
 	"omniarr/internal/config"
 )
 
 func main() {
-	app := fiber.New()
+	router := gin.Default()
 
-	api.SetupRoutes(app)
+	api.SetupRoutes(router)
 
 	addr := fmt.Sprintf(":%s", config.AppConfig.Port)
 	log.Printf("🚀 Omniarr is running at http://localhost%s\n", addr)
 
-	if err := app.Listen(addr); err != nil {
+	if err := router.Run(addr); err != nil {
 		log.Fatalf("Error starting server: %v", err)
 	}
 }

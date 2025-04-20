@@ -1,21 +1,34 @@
-import {useEffect} from "react";
+import {useEffect, useRef} from "react";
 import * as React from "react";
 import {useSearchContext} from "../contexts/SearchContext.tsx";
-import { getRequest } from "../utils/Requester.tsx";
+import {streamRequest} from "../utils/Requester.tsx";
 
-export default function SearchBar(props: { setResults: Function, setLoading: Function, setError: Function }) {
+export default function SearchBar(props: { setResults: Function, onData: (data: any) => void, setLoading: Function, setError: Function }) {
     const { searchQuery, setSearchQuery } = useSearchContext();
+    const isFirstRender = useRef(true);
+    const lastSearchedQuery = useRef(searchQuery);
+
     const handleSearch = async (e: React.FormEvent | null) => {
         e && e.preventDefault();
+        if(searchQuery === lastSearchedQuery.current)
+            return;
+
+
+        props.setResults(null);
         if (!searchQuery) {
             props.setResults(null);
             return;
         }
 
-        props.setResults(await getRequest(`/medias/search?q=${searchQuery}`, props.setLoading, props.setError));
+        streamRequest(`/medias/search?q=${searchQuery}`, "GET", null, props.onData, props.setLoading, props.setError)
     };
 
     useEffect(() => {
+        if(isFirstRender.current) {
+            isFirstRender.current = false;
+            return;
+        }
+
         let timerId = setTimeout(() => handleSearch(null), 300);
         return () => clearTimeout(timerId);
     }, [searchQuery])

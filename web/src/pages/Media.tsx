@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router';
 import {MediaDetails} from "../types/Media.ts";
 import DownloadList from "../components/DownloadList.tsx";
-import {getRequest} from "../utils/Requester.tsx";
+import {request} from "../utils/Requester.tsx";
 import {getCoverURL} from "../types/Media.ts";
 
 export default function Media() {
@@ -12,7 +12,7 @@ export default function Media() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {getRequest(`/medias/${id}`, setLoading, setError).then(setMedia)}, [id]);
+    useEffect(() => {request(`/medias/${id}`, "GET", null, setLoading, setError).then(setMedia)}, [id]);
 
     if (loading) {
         return (

@@ -2,48 +2,76 @@ package handlers
 
 import (
 	"context"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/log"
+	"github.com/gin-gonic/gin"
+	"net/http"
 	"omniarr/internal/api/response"
 	"omniarr/internal/core/download"
+	"omniarr/internal/core/media"
+	"sync"
 )
 
-func DownloadsSearchHandler(c *fiber.Ctx) error {
+func DownloadsSearchHandler(c *gin.Context) {
 	ctx := context.Background()
 	var search download.SearchQuery
 
-	if err := c.BodyParser(&search); err != nil {
-		return response.Fail(c, "Failed to parse request", fiber.StatusBadRequest)
+	if err := c.ShouldBindJSON(&search); err != nil {
+		response.Fail(c, "Failed to parse request", http.StatusBadRequest)
+		return
 	}
 
 	if search.Type == "" {
-		return response.Fail(c, "Missing ?type= param", fiber.StatusBadRequest)
+		response.Fail(c, "Missing ?type= param", http.StatusBadRequest)
+		return
 	}
 	if search.Title == "" {
-		return response.Fail(c, "Missing ?title= param", fiber.StatusBadRequest)
+		response.Fail(c, "Missing ?title= param", http.StatusBadRequest)
+		return
 	}
 
-	results, err := download.Search(ctx, search)
-	if err != nil {
-		return response.Fail(c, "")
-	}
+	queries := download.GenerateQueries(search)
+	resultChan := make(chan response.StreamResult[download.Download], len(queries))
+	go func() {
+		var lock sync.WaitGroup
 
-	return response.OK(c, results)
+		for _, q := range queries {
+			q := q
+			lock.Add(1)
+
+			go func(query string) {
+				defer lock.Done()
+
+				results, err := download.Search(ctx, media.Type(search.Type), q)
+				if err != nil {
+					resultChan <- response.StreamResult[download.Download]{Error: err}
+					return
+				}
+
+				for _, result := range results {
+					resultChan <- response.StreamResult[download.Download]{Data: result}
+				}
+			}(q)
+		}
+
+		lock.Wait()
+		close(resultChan)
+	}()
+
+	response.Stream(c, resultChan)
 }
 
-func QueueDownloadHandler(c *fiber.Ctx) error {
+func QueueDownloadHandler(c *gin.Context) {
 	ctx := context.Background()
 
 	var req download.QueueDownloadRequest
-	if err := c.BodyParser(&req); err != nil {
-		log.Error(err)
-		return response.Fail(c, "Failed to parse request", fiber.StatusBadRequest)
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Fail(c, "Failed to parse request", http.StatusBadRequest)
+		return
 	}
 
 	if err := download.QueueDownload(ctx, req.Url); err != nil {
-		log.Error(err)
-		return response.Fail(c, "Error while queuing download")
+		response.Fail(c, "Error while queuing download")
+		return
 	}
 
-	return response.OK(c, nil)
+	response.OK(c, nil)
 }

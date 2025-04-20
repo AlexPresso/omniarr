@@ -2,14 +2,15 @@ package handlers
 
 import (
 	"context"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/log"
+	"github.com/gin-gonic/gin"
+	"net/http"
 	"omniarr/internal/api/response"
 	"omniarr/internal/core/media"
 	"strings"
+	"sync"
 )
 
-func MediaSearchHandler(c *fiber.Ctx) error {
+func MediaSearchHandler(c *gin.Context) {
 	ctx := context.Background()
 
 	mediaTypes := []media.Type{"movie", "tv", "book"}
@@ -20,23 +21,46 @@ func MediaSearchHandler(c *fiber.Ctx) error {
 
 	query := c.Query("q")
 	if query == "" {
-		return response.Fail(c, "Missing ?q= param", fiber.StatusBadRequest)
+		response.Fail(c, "Missing ?q= param", http.StatusBadRequest)
+		return
 	}
 
-	results, err := media.Search(ctx, query, mediaTypes)
-	if err != nil {
-		log.Error("Error searching medias: %v", err)
-		return response.Fail(c, "")
-	}
+	resultChan := make(chan response.StreamResult[*media.Media], len(mediaTypes))
+	go func() {
+		var lock sync.WaitGroup
 
-	return response.OK(c, results)
+		for _, t := range mediaTypes {
+			t := t
+			lock.Add(1)
+
+			go func(mt media.Type) {
+				defer lock.Done()
+
+				results, err := media.Search(ctx, query, mt)
+				if err != nil {
+					resultChan <- response.StreamResult[*media.Media]{Error: err}
+					return
+				}
+
+				for _, result := range results {
+					resultChan <- response.StreamResult[*media.Media]{Data: result}
+				}
+			}(t)
+		}
+
+		lock.Wait()
+		close(resultChan)
+	}()
+
+	response.Stream(c, resultChan)
 }
 
-func MediaDetailsHandler(c *fiber.Ctx) error {
+func MediaDetailsHandler(c *gin.Context) {
 	ctx := context.Background()
-	mediaSplit := strings.Split(c.Params("media"), ":")
+	mediaSplit := strings.Split(c.Param("media"), ":")
 	if len(mediaSplit) != 2 {
-		return response.Fail(c, "Media ID should be <type>:<id>")
+		response.Fail(c, "Media ID should be <type>:<id>")
+		return
 	}
 
 	mediaType := media.Type(mediaSplit[0])
@@ -44,9 +68,8 @@ func MediaDetailsHandler(c *fiber.Ctx) error {
 
 	details, err := media.GetDetails(ctx, idString, mediaType)
 	if err != nil {
-		log.Error("Error getting media details: %v", err)
-		return response.Fail(c, "")
+		response.Fail(c, "")
 	}
 
-	return response.OK(c, details)
+	response.OK(c, details)
 }

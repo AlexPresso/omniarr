@@ -1,11 +1,11 @@
-import { createContext, useState, useContext, ReactNode } from 'react';
+import {createContext, useState, useContext, ReactNode, Dispatch, SetStateAction} from 'react';
 import { Media } from '../types/Media';
 
 interface SearchContextType {
     searchQuery: string;
     setSearchQuery: (query: string) => void;
     results: Media[] | null;
-    setResults: (results: Media[] | null) => void;
+    setResults: Dispatch<SetStateAction<Media[] | null>>;
 }
 
 const SearchContext = createContext<SearchContextType | undefined>(undefined);

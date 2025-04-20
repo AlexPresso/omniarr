@@ -12,22 +12,16 @@ var mediaFetchers = map[Type]Fetcher{
 	"book":  BookFetcher{},
 }
 
-func Search(ctx context.Context, query string, mediaTypes []Type) ([]*Media, error) {
-	var medias []*Media
+func Search(ctx context.Context, query string, mediaType Type) ([]*Media, error) {
+	fetcher, ok := mediaFetchers[mediaType]
+	if !ok {
+		return nil, fmt.Errorf("unsupported media type: %s", mediaType)
+	}
 
-	for _, mediaType := range mediaTypes {
-		fetcher, ok := mediaFetchers[mediaType]
-		if !ok {
-			return nil, fmt.Errorf("unsupported media type: %s", mediaType)
-		}
-
-		media, err := fetcher.Search(ctx, query)
-		if err != nil {
-			log.Error(err)
-			continue
-		}
-
-		medias = append(medias, media...)
+	medias, err := fetcher.Search(ctx, query)
+	if err != nil {
+		log.Error(err)
+		return nil, err
 	}
 
 	return medias, nil

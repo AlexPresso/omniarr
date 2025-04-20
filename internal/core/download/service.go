@@ -39,13 +39,22 @@ var categories = map[media.Type][]uint{
 	},
 }
 
-func Search(ctx context.Context, query SearchQuery) ([]Download, error) {
-	results, err := generateQueriesAndFetch(ctx, query)
+func Search(ctx context.Context, mediaType media.Type, query string) ([]Download, error) {
+	queryCategories := append(categories[mediaType], 8000)
+
+	log.Info("Searching for %s", query)
+	req := &jackett.FetchRequest{
+		Query:      query,
+		Categories: queryCategories,
+	}
+
+	resp, err := client.Jackett.Fetch(ctx, req)
 	if err != nil {
+		log.Error("Error fetching results from Jackett: %v", err)
 		return nil, err
 	}
 
-	return filterAndMapToSearchResults(query, results), nil
+	return filterAndMapToSearchResults(resp.Results), nil
 }
 
 func QueueDownload(ctx context.Context, url string) error {
@@ -60,35 +69,20 @@ func QueueDownload(ctx context.Context, url string) error {
 	return nil
 }
 
-func generateQueriesAndFetch(ctx context.Context, query SearchQuery) ([]jackett.Result, error) {
+func GenerateQueries(query SearchQuery) []string {
 	queries := media.MakeAlternateTitles(query.Title)
 	queries = append(queries, media.MakeAlternateTitles(query.OriginalTitle)...)
 
-	var results []jackett.Result
-	queryCategories := append(categories[media.Type(query.Type)], 8000)
+	return queries
+}
 
-	for _, q := range queries {
-		log.Info("Searching for %s", q)
-		req := &jackett.FetchRequest{
-			Query:      q,
-			Categories: queryCategories,
-		}
-
-		resp, err := client.Jackett.Fetch(ctx, req)
-		if err != nil {
-			log.Error("Error fetching results from Jackett: %v", err)
+func filterAndMapToSearchResults(results []jackett.Result) []Download {
+	torrentsMap := make(map[string]Download)
+	for _, r := range results {
+		if r.Seeders == 0 {
 			continue
 		}
 
-		results = append(results, resp.Results...)
-	}
-
-	return results, nil
-}
-
-func filterAndMapToSearchResults(query SearchQuery, results []jackett.Result) []Download {
-	torrentsMap := make(map[string]Download)
-	for _, r := range results {
 		link := strings.ReplaceAll(r.Link, config.AppConfig.JackettApiKey, "<jackettApiKey>")
 		magnetUri := strings.ReplaceAll(r.MagnetUri, config.AppConfig.JackettApiKey, "<jackettApiKey>")
 
